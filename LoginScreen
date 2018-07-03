@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MessagingAPP
+{
+    class LoginScreen
+    {
+        public void ShowScreen()
+        {
+            Console.Clear();
+            Console.WriteLine("\n**************************************************");
+            Console.WriteLine("*** Login Screen ***");
+            Console.WriteLine("**************************************************\n");
+
+            bool flag = false;
+
+            do
+            {
+                Console.Write("Username: ");
+                string username = Console.ReadLine();
+                Console.Write("\n");
+
+                Console.Write("Password: ");
+                string password = ConsolePassword.ReadPassword();
+                Console.Write("\n");
+
+                if (username == null || username == "" || password == null || password == "")
+                {
+                    Console.WriteLine("Username / Password can't be empty!");
+                    flag = false;
+                }
+                else
+                {
+                    MessagingDBModel objDb = new MessagingDBModel();
+                    List<User> usersList = objDb.Users.Where(P => P.Username == username && P.Password == password).ToList();
+
+                    if (usersList.Count > 0)
+                    {
+                        string userType = usersList.SingleOrDefault().UserType.ToString().Trim();
+
+                        if (userType == "Super Admin")
+                        {
+                            AdminScreen adminScreen = new AdminScreen();
+                            adminScreen.ShowScreen();
+                        }
+                        else if (userType == "User")
+                        {
+                            int pkid = usersList.SingleOrDefault().PKID;
+                            UserRole objRoles = objDb.UserRoles.SingleOrDefault(P => P.UserID == pkid);
+                            ManageData dataScreen = new ManageData();
+                            dataScreen.UserView(pkid, objRoles.ViewData.Trim(), objRoles.EditData.Trim(), objRoles.DeleteData.Trim());
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Username / Password incorrect. Please try again!");
+                        flag = false;
+                    }
+
+                }
+
+            } while (!flag);
+        }
+    }
+}
